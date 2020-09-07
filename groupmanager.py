@@ -59,10 +59,10 @@ async def cancel_ban_member(bot, ev):
         elif m.type == 'at' and m.data['qq'] == 'all':
             await util.gruop_silence(bot, ev, gid, False)
             return
-        if sid is None:
-            await bot.send(ev, '请@需要摘口球的群员哦w')
-            return
-        await util.member_silence(bot, ev, uid, sid, gid, time)
+    if sid is None:
+        await bot.send(ev, '请@需要摘口球的群员哦w')
+        return
+    await util.member_silence(bot, ev, uid, sid, gid, time)
 
 @sv.on_fullmatch(('全员口球','全员禁言'))
 async def ban_all(bot, ev):
@@ -88,9 +88,9 @@ async def guoup_kick(bot, ev):
         elif m.type == 'at' and m.data['qq'] == 'all':
             await bot.send(ev, '人干事？', at_sender=True)
             return
-        if sid is None:
-            sid = uid
-        await util.member_kick(bot, ev, uid, sid, gid, is_reject)
+    if sid is None:
+        sid = uid
+    await util.member_kick(bot, ev, uid, sid, gid, is_reject)
 
 @sv.on_prefix(('修改名片','修改群名片','设置名片','设置群名片'))
 async def card_set(bot, ev):
