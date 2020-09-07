@@ -3,16 +3,19 @@ from hoshino import priv
 
 from . import *
 
-'''
-self_member_info
-gruop_silence
-member_silence
-title_get
-member_kick
-card_edit
-'''
+#获取指定群成员信息
+async def group_member_info(bot, ev, gid, uid):
+        try:
+            gm_info = await bot.get_group_member_info(
+                group_id = gid,
+                user_id = uid,
+                no_cache = True
+            )
+            return gm_info
+        except Exception as e:
+            hoshino.logger.exception(e)
 
-#获取Bot的群角色
+#获取Bot的群信息
 async def self_member_info(bot, ev, gid):
     for sid in hoshino.get_self_ids():
         self_id = sid
@@ -22,14 +25,25 @@ async def self_member_info(bot, ev, gid):
                 user_id = self_id,
                 no_cache = True
             )
-            return gm_info['role']
+            return gm_info
         except Exception as e:
             hoshino.logger.exception(e)
 
+#群荣誉信息
+async def honor_info(bot, ev, gid, honor_type):
+    try:
+        gh_info = await bot.get_group_honor_info(
+            group_id = gid,
+            type = honor_type
+        )
+        return gh_info
+    except Exception as e:
+        hoshino.logger.exception(e)
+
 #全员禁言
 async def gruop_silence(bot, ev, gid, status):
-    self_role = await self_member_info(bot, ev, gid)
-    if self_role != 'owner' and self_role != 'admin':
+    self_info = await self_member_info(bot, ev, gid)
+    if self_info['role'] != 'owner' and self_info['role'] != 'admin':
         await bot.send(ev, '\n不给我管理员还想让我帮忙塞口球？做梦去吧！', at_sender=True)
         return    
     if not priv.check_priv(ev,priv.ADMIN):
@@ -49,8 +63,8 @@ async def gruop_silence(bot, ev, gid, status):
 
 #单人禁言
 async def member_silence(bot, ev, uid, sid, gid, time):
-    self_role = await self_member_info(bot, ev, gid)
-    if self_role != 'owner' and self_role != 'admin':
+    self_info = await self_member_info(bot, ev, gid)
+    if self_info['role'] != 'owner' and self_info['role'] != 'admin':
         await bot.send(ev, '\n不给我管理员还想让我帮忙塞口球？做梦去吧！', at_sender=True)
         return
     if not time.isdigit() and '*' not in time:
@@ -75,8 +89,8 @@ async def member_silence(bot, ev, uid, sid, gid, time):
 
 #头衔申请
 async def title_get(bot, ev, uid, sid, gid, title):
-    self_role = await self_member_info(bot, ev, gid)
-    if self_role != 'owner':
+    self_info = await self_member_info(bot, ev, gid)
+    if self_info['role'] != 'owner':
         await bot.send(ev, '\n嘻嘻嘻，把群转移给我才能用这个功能哦！\n我才不告诉你可以去qun.qq.com里找回群主权限呢！', at_sender=True)
         return
     if uid == sid or priv.check_priv(ev,priv.ADMIN):
@@ -98,8 +112,8 @@ async def title_get(bot, ev, uid, sid, gid, title):
 
 #群组踢人
 async def member_kick(bot, ev, uid, sid, gid, is_reject):
-    self_role = await self_member_info(bot, ev, gid)
-    if self_role != 'owner' and self_role != 'admin':
+    self_info = await self_member_info(bot, ev, gid)
+    if self_info['role'] != 'owner' and self_info['role'] != 'admin':
         await bot.send(ev, '\n傻批，不给我管理员我搁那踢空气呢？？？', at_sender=True)
         return
     if uid == sid or priv.check_priv(ev,priv.ADMIN):
@@ -117,8 +131,8 @@ async def member_kick(bot, ev, uid, sid, gid, is_reject):
 
 #群名片修改
 async def card_edit(bot, ev, uid, sid, gid, card_text):
-    self_role = await self_member_info(bot, ev, gid)
-    if self_role != 'owner' and self_role != 'admin':
+    self_info = await self_member_info(bot, ev, gid)
+    if self_info['role'] != 'owner' and self_info['role'] != 'admin':
         await bot.send(ev, '\n我日，不给我管理改锤子名片', at_sender=True)
     if uid == sid or priv.check_priv(ev,priv.ADMIN):
         try:
@@ -133,13 +147,21 @@ async def card_edit(bot, ev, uid, sid, gid, card_text):
     elif uid != sid and not priv.check_priv(ev,priv.ADMIN):
         await bot.send(ev, '只有狗管理才能给别人设置名片了啦！', at_sender=True)
 
-#群荣誉信息
-async def honor_info(bot, ev, gid, honor_type):
-    try:
-        gh_info = await bot.get_group_honor_info(
-            group_id = gid,
-            type = honor_type
-        )
-        return gh_info
-    except Exception as e:
-        hoshino.logger.exception(e)
+		
+
+async def group_name(bot, ev, gid, name_text):
+    self_info = await self_member_info(bot, ev, gid)
+    if self_info['role'] != 'owner' and self_info['role'] != 'admin':
+        await bot.send(ev, '\n我还没获得管理权限呢...', at_sender=True)
+        return    
+    if not priv.check_priv(ev,priv.ADMIN):
+        await bot.send(ev, '只有狗管理才能修改群名哦！', at_sender=True) 
+    else:   
+        try:
+            await bot.set_group_name(
+			    group_id = gid,
+			    name = name_text
+			)
+            await bot.send(ev, f'群名已修改为“{name_text}”啦')
+        except Exception as e:
+            await bot.send(ev, '群名修改失败惹...\n错误代码：{e}', at_sender=True)

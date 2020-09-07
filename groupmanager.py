@@ -1,4 +1,7 @@
-from hoshino import Service, priv
+from hoshino import Service, priv, R
+from hoshino.util import DailyNumberLimiter
+
+import random
 
 from . import util
 
@@ -104,11 +107,26 @@ async def card_set(bot, ev):
     if sid is None:
         sid = uid
     await util.card_edit(bot, ev, uid, sid, gid, card_text)
-'''
-@sv.on_fullmatch(('谁是龙王','龙王是谁'))
-async def whois_talkative(bot, ev):
+    
+@sv.on_fullmatch(('谁是龙王','迫害龙王','龙王是谁'))
+async def whois_dragon_king(bot, ev):
     gid = ev.group_id
+    self_info = await util.self_member_info(bot, ev, gid)
+    sid = self_info['user_id']
     honor_type = 'talkative'
     ta_info = await util.honor_info(bot, ev, gid, honor_type)
-    print(ta_info)
-'''
+    dk = ta_info['current_talkative']['user_id']
+    if sid == dk:
+        pic = R.img('dk_is_me.jpg').cqcode
+        await bot.send(ev,f'你们这群丢人玩意，龙王怎么又是我\n{pic}')
+    else:
+        action=random.choice(['龙王出来挨透','龙王出来喷水'])
+        dk_avater = ta_info['current_talkative']['avatar'] + '640' + f'&t={dk}'
+        await bot.send(ev, f'[CQ:at,qq={dk}]\n{action}\n[CQ:image,file={dk_avater}]')
+
+@sv.on_prefix(('修改群名','设置群名'))
+async def set_group_name(bot, ev):
+    gid = ev.group_id
+    uid = ev.user_id
+    name_text = ev.message.extract_plain_text()
+    await util.group_name(bot, ev, gid, name_text)
