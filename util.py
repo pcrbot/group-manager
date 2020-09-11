@@ -83,7 +83,7 @@ async def member_silence(bot, ev, uid, sid, gid, time):
                     await bot.send(ev, f'成功禁言[CQ:at,qq={sid}]{eval(time)}秒~')
 
             except Exception as e:
-                await bot.send(ev, '口球失败惹呜呜呜...\n错误代码：{e}', at_sender=True)
+                await bot.send(ev, f'口球失败惹呜呜呜...\n错误代码：{e}', at_sender=True)
         elif uid != sid and not priv.check_priv(ev,priv.ADMIN):
             await bot.send(ev, '只有管理员才可以给别人塞口球哦~', at_sender=True)
 
