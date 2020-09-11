@@ -115,6 +115,9 @@ async def whois_dragon_king(bot, ev):
     sid = self_info['user_id']
     honor_type = 'talkative'
     ta_info = await util.honor_info(bot, ev, gid, honor_type)
+    if 'current_talkative' not in ta_info:
+        await bot.send(ev, '本群没有开启龙王标志哦~')
+        return
     dk = ta_info['current_talkative']['user_id']
     if sid == dk:
         pic = R.img('dk_is_me.jpg').cqcode
