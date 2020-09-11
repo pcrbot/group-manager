@@ -59,7 +59,7 @@ async def gruop_silence(bot, ev, gid, status):
             else:
                 await bot.send(ev, '嘻嘻大家都被塞口球啦~')
         except Exception as e:
-            await bot.send(ev, '操作失败惹...\n错误代码：{e}', at_sender=True)
+            await bot.send(ev, f'操作失败惹...\n错误代码：{e}', at_sender=True)
 
 #单人禁言
 async def member_silence(bot, ev, uid, sid, gid, time):
