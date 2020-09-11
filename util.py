@@ -5,15 +5,15 @@ from . import *
 
 #获取指定群成员信息
 async def group_member_info(bot, ev, gid, uid):
-        try:
-            gm_info = await bot.get_group_member_info(
-                group_id = gid,
-                user_id = uid,
-                no_cache = True
-            )
-            return gm_info
-        except Exception as e:
-            hoshino.logger.exception(e)
+    try:
+        gm_info = await bot.get_group_member_info(
+            group_id = gid,
+            user_id = uid,
+            no_cache = True
+        )
+        return gm_info
+    except Exception as e:
+        hoshino.logger.exception(e)
 
 #获取Bot的群信息
 async def self_member_info(bot, ev, gid):
