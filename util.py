@@ -106,7 +106,7 @@ async def title_get(bot, ev, uid, sid, gid, title):
             else:
                 await bot.send(ev, f'已为[CQ:at,qq={sid}]发放专属头衔“{title}”~')
         except Exception as e:
-            await bot.send(ev, '诶...头衔呢？\n错误代码：{e}', at_sender=True)
+            await bot.send(ev, f'诶...头衔呢？\n错误代码：{e}', at_sender=True)
     elif uid != sid and not priv.check_priv(ev,priv.ADMIN):
         await bot.send(ev, '只有管理员才可以对别人的头衔进行操作哦~', at_sender=True)
 
