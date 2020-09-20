@@ -164,6 +164,6 @@ async def set_group_name(bot, ev):
 @sv.on_message('group')
 async def fuck_xxs(bot, ev):
     for m in ev.message:
-        if m.type == 'json':
+        if m.type == 'json' and '"app":"com.tencent.autoreply"' in m.data['data']:
             await bot.delete_msg(message_id=ev.message_id)
             await bot.send(ev, '这是onse病毒码，会获取到你手机的xxs，然后发起攻击...以下省略6行需要全文背诵的金句')
