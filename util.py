@@ -5,15 +5,15 @@ from . import *
 
 #获取指定群成员信息
 async def group_member_info(bot, ev, gid, uid):
-        try:
-            gm_info = await bot.get_group_member_info(
-                group_id = gid,
-                user_id = uid,
-                no_cache = True
-            )
-            return gm_info
-        except Exception as e:
-            hoshino.logger.exception(e)
+    try:
+        gm_info = await bot.get_group_member_info(
+            group_id = gid,
+            user_id = uid,
+            no_cache = True
+        )
+        return gm_info
+    except Exception as e:
+        hoshino.logger.exception(e)
 
 #获取Bot的群信息
 async def self_member_info(bot, ev, gid):
@@ -59,18 +59,18 @@ async def gruop_silence(bot, ev, gid, status):
             else:
                 await bot.send(ev, '嘻嘻大家都被塞口球啦~')
         except Exception as e:
-            await bot.send(ev, '操作失败惹...\n错误代码：{e}', at_sender=True)
+            await bot.send(ev, f'操作失败惹...\n错误代码：{e}', at_sender=True)
 
 #单人禁言
-async def member_silence(bot, ev, uid, sid, gid, time):
+async def member_silence(bot, ev, uid, sid, gid, time, no_message):
     self_info = await self_member_info(bot, ev, gid)
     if self_info['role'] != 'owner' and self_info['role'] != 'admin':
         await bot.send(ev, '\n不给我管理员还想让我帮忙塞口球？做梦去吧！', at_sender=True)
         return
     if not time.isdigit() and '*' not in time:
-        await bot.send(ev, '憨批，时长都能输错？')
+        await bot.send(ev)# '憨批，时长都能输错？'
     else:
-        if uid == sid or priv.check_priv(ev,priv.ADMIN):
+        if uid == sid or priv.check_priv(ev,priv.NORMAL):
             try:
                 await bot.set_group_ban(
                     group_id = gid,
@@ -79,13 +79,13 @@ async def member_silence(bot, ev, uid, sid, gid, time):
                     )
                 if time == '0':
                     await bot.send(ev, f'[CQ:at,qq={sid}]的口球已经摘下来啦w')
-                else:
+                elif not no_message:
                     await bot.send(ev, f'成功禁言[CQ:at,qq={sid}]{eval(time)}秒~')
-
             except Exception as e:
-                await bot.send(ev, '口球失败惹呜呜呜...\n错误代码：{e}', at_sender=True)
+                await bot.send(ev, f'口球失败惹呜呜呜...\n错误代码：{e}', at_sender=True)
         elif uid != sid and not priv.check_priv(ev,priv.ADMIN):
             await bot.send(ev, '只有管理员才可以给别人塞口球哦~', at_sender=True)
+
 
 #头衔申请
 async def title_get(bot, ev, uid, sid, gid, title):
@@ -106,7 +106,7 @@ async def title_get(bot, ev, uid, sid, gid, title):
             else:
                 await bot.send(ev, f'已为[CQ:at,qq={sid}]发放专属头衔“{title}”~')
         except Exception as e:
-            await bot.send(ev, '诶...头衔呢？\n错误代码：{e}', at_sender=True)
+            await bot.send(ev, f'诶...头衔呢？\n错误代码：{e}', at_sender=True)
     elif uid != sid and not priv.check_priv(ev,priv.ADMIN):
         await bot.send(ev, '只有管理员才可以对别人的头衔进行操作哦~', at_sender=True)
 
