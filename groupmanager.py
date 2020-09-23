@@ -34,6 +34,8 @@ async def del_special_title(bot, ev):
         sid = uid
     await util.title_get(bot, ev, uid, sid, gid, title)
 
+  
+#单人禁言
 @sv.on_prefix(('来发口球','塞口球','禁言一下'))
 async def umm_ahh(bot, ev):
     uid = ev.user_id
@@ -48,7 +50,32 @@ async def umm_ahh(bot, ev):
             return
     if sid is None:
         sid = uid
-    await util.member_silence(bot, ev, uid, sid, gid, time)
+    await util.member_silence(bot, ev, uid, sid, gid, time, False)
+
+#一带一路
+@sv.on_prefix(('一带一路'))
+async def umm_ahh(bot, ev):
+    uid = ev.user_id
+    sid = None
+    gid = ev.group_id
+    time = ev.message.extract_plain_text().strip()
+    for m in ev.message:
+        if m.type == 'at' and m.data['qq'] != 'all':
+            sid = int(m.data['qq'])
+        elif m.type == 'at' and m.data['qq'] == 'all':
+            await bot.send(ev, '人干事？', at_sender=True)
+            await util.member_silence(bot, ev, uid, uid, gid, 180, False)
+            return
+    if sid is None:
+        sid = uid
+    if eval(time) > 300:
+        await bot.send(ev, f'时长不可大于300秒哟~', at_sender=True)
+        return
+    await util.member_silence(bot, ev, uid, sid, gid, time, True)
+    await util.member_silence(bot, ev, uid, uid, gid, time, True)
+    await bot.send(ev, f'[CQ:at,qq={uid}]成功一带一路[CQ:at,qq={sid}]{eval(time)}秒~')
+        
+
 
 @sv.on_prefix(('解除口球','取消口球','摘口球','脱口球','取消禁言','解除禁言'))
 async def cancel_ban_member(bot, ev):
@@ -65,7 +92,7 @@ async def cancel_ban_member(bot, ev):
     if sid is None:
         await bot.send(ev, '请@需要摘口球的群员哦w')
         return
-    await util.member_silence(bot, ev, uid, sid, gid, time)
+    await util.member_silence(bot, ev, uid, sid, gid, time, False)
 
 @sv.on_fullmatch(('全员口球','全员禁言'))
 async def ban_all(bot, ev):
@@ -78,7 +105,7 @@ async def cancel_ban_all(bot, ev):
     gid = ev.group_id
     status = False
     await util.gruop_silence(bot, ev, gid, status)
-
+'''
 @sv.on_prefix(('来张飞机票','踢出本群','移出本群','踢出此群','移出群聊'))
 async def guoup_kick(bot, ev):
     uid = ev.user_id
@@ -94,7 +121,7 @@ async def guoup_kick(bot, ev):
     if sid is None:
         sid = uid
     await util.member_kick(bot, ev, uid, sid, gid, is_reject)
-
+'''
 @sv.on_prefix(('修改名片','修改群名片','设置名片','设置群名片'))
 async def card_set(bot, ev):
     uid = ev.user_id
@@ -133,3 +160,10 @@ async def set_group_name(bot, ev):
     uid = ev.user_id
     name_text = ev.message.extract_plain_text()
     await util.group_name(bot, ev, gid, name_text)
+
+@sv.on_message('group')
+async def fuck_xxs(bot, ev):
+    for m in ev.message:
+        if m.type == 'json' and '"app":"com.tencent.autoreply"' in m.data['data']:
+            await bot.delete_msg(message_id=ev.message_id)
+            await bot.send(ev, '这是onse病毒码，会获取到你手机的xxs，然后发起攻击...以下省略6行需要全文背诵的金句')
