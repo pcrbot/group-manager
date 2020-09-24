@@ -2,10 +2,25 @@ from hoshino import Service, priv, R
 from hoshino.util import DailyNumberLimiter
 
 import random
+import re
 
 from . import util
 
-sv = Service('group-manager', enable_on_default=True, visible=True)
+HELP = '''
+注意本页指令可能由于风控在您的群不可用
+[谁是龙王] 查看本群龙王
+[龙王榜] 查看本群B话最多的人
+以下指令需要机器人是管理员, 且被执行人是普通群员
+[修改群名XXX] 群名修改为XXX
+[修改名片XXX@某人] 修改某人的群名片为XXX
+[来发口球360@某人] 禁言某人360秒, 可以修改为自己需要的时间
+[解除口球@某人] 取消某人的禁言
+[全员口球] 开启全员禁言
+[取消全员禁言] 关闭全员禁言
+[一带一路60@某人]神秘功能, 60可以修改为300以下的秒数
+'''.strip()
+
+sv = Service('group-manager', enable_on_default=True, help_=HELP, visible=True)
 
 @sv.on_prefix('申请头衔')
 async def special_title(bot, ev):
@@ -54,7 +69,7 @@ async def umm_ahh(bot, ev):
 
 #一带一路
 @sv.on_prefix(('一带一路'))
-async def umm_ahh(bot, ev):
+async def umm_ahh_(bot, ev):
     uid = ev.user_id
     sid = None
     gid = ev.group_id
@@ -157,7 +172,6 @@ async def whois_dragon_king(bot, ev):
 @sv.on_prefix(('修改群名','设置群名'))
 async def set_group_name(bot, ev):
     gid = ev.group_id
-    uid = ev.user_id
     name_text = ev.message.extract_plain_text()
     await util.group_name(bot, ev, gid, name_text)
 
@@ -167,3 +181,45 @@ async def fuck_xxs(bot, ev):
         if m.type == 'json' and '"app":"com.tencent.autoreply"' in m.data['data']:
             await bot.delete_msg(message_id=ev.message_id)
             await bot.send(ev, '这是onse病毒码，会获取到你手机的xxs，然后发起攻击...以下省略6行需要全文背诵的金句')
+
+@sv.on_fullmatch(('龙王榜','龙王排行','龙王排行榜', '龙王榜单'))
+async def dragon_king_list(bot, ev):
+    gid = ev.group_id
+    ta_info = await util.honor_info(bot, ev, gid, 'talkative')
+    dragon_king_list_info = ta_info['talkative_list']
+
+    # 处理description和nickname关系
+    dkdir = {}
+    for item in dragon_king_list_info:
+        user_id = item['user_id']
+        nickname = item['nickname']
+        description = item['description']
+        temp = re.findall(r'\d+', description)
+        
+        # 累计获得龙王的次数
+        dragon_king_days = int(temp[0])
+        # 连续获得龙王
+        dragon_king_days_continuous = int(temp[1])
+        dkdir[nickname] = {
+            'user_id': user_id,
+            'days_max': dragon_king_days,
+            'days_contin': dragon_king_days_continuous
+        }
+    # 瞎写的排序
+    dkdir_sorted = sorted(dkdir.items(), key=lambda d: d[1]['days_max'], reverse=True)
+    dkk = dkdir_sorted[0][1]['user_id']
+    msg = f'本群获得龙王次数最多的是：\n{dkdir_sorted[0][0]}\n'
+    dk_avater = f'http://q1.qlogo.cn/g?b=qq&nk={dkk}&s=5'
+    msg += f'[CQ:image,file={dk_avater}]'
+    msg += '\n本群龙王榜\n'
+    i = 0
+    for it in dkdir_sorted:
+        _nickname = dkdir_sorted[i][0]
+        _days_max = dkdir_sorted[i][1]['days_max']
+        _days_contin = dkdir_sorted[i][1]['days_contin']
+        msg += f'第{i+1}名：{_nickname}，共{_days_max}次，最长连续{_days_contin}天获得龙王\n'
+        i = i+1
+        # 只显示前五名
+        if i >= 5:
+            break
+    await bot.send(ev, msg)
