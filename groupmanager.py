@@ -17,6 +17,7 @@ HELP = '''
 [解除口球@某人] 取消某人的禁言
 [全员口球] 开启全员禁言
 [取消全员禁言] 关闭全员禁言
+[发公告XXX] 发送群公告
 [一带一路60@某人]神秘功能, 60可以修改为300以下的秒数
 '''.strip()
 
@@ -223,3 +224,37 @@ async def dragon_king_list(bot, ev):
         if i >= 5:
             break
     await bot.send(ev, msg)
+
+@sv.on_prefix(('发公告','帮我发公告'))
+async def send_group_notice(bot, ev):
+    gid = ev.group_id
+    text = ev.message.extract_plain_text()
+    await util.group_notice(bot, ev, gid, text)
+
+@sv.on_prefix('setadmin')
+async def setadmin(bot, ev):
+    if not priv.check_priv(ev,priv.SUPERUSER):
+        return
+    gid = ev.group_id
+    sid = None
+    for m in ev.message:
+        if m.type == 'at' and m.data['qq'] != 'all':
+            sid = int(m.data['qq'])
+    if sid is None:
+        await bot.send(ev, '请@需要设置管理的人哦', at_sender=True)
+        return
+    await bot.set_group_admin(group_id=gid, user_id=sid, enable=True)
+
+@sv.on_prefix('removeadmin')
+async def removeadmin(bot, ev):
+    if not priv.check_priv(ev,priv.SUPERUSER):
+        return
+    gid = ev.group_id
+    sid = None
+    for m in ev.message:
+        if m.type == 'at' and m.data['qq'] != 'all':
+            sid = int(m.data['qq'])
+    if sid is None:
+        await bot.send(ev, '请@需要取消管理的人哦', at_sender=True)
+        return
+    await bot.set_group_admin(group_id=gid, user_id=sid, enable=False)
